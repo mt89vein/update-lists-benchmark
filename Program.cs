@@ -126,8 +126,6 @@ namespace LinqJoinBenchmark
         [Benchmark]
         public void ShortLinqs()
         {
-            _existingItems.AddRange(_newItems.Except(_existingItems));
-            _existingItems.RemoveAll(item => !_newItems.Contains(item));
             _existingItems.ForEach(existing =>
             {
                 var found = _newItems.Find(i => i.Id == existing.Id);
@@ -136,6 +134,8 @@ namespace LinqJoinBenchmark
                     existing.G = found.G;
                 }
             });
+            _existingItems.RemoveAll(item => !_newItems.Contains(item));
+            _existingItems.AddRange(_newItems.Except(_existingItems));
 
             _existingItems.Consume(new Consumer());
         }
@@ -175,15 +175,6 @@ namespace LinqJoinBenchmark
         [Benchmark]
         public void ManualForeach()
         {
-            foreach (var newItem in _newItems)
-            {
-                if (!_existingItems.Contains(newItem))
-                {
-                    _existingItems.Add(newItem);
-                }
-
-            }
-
             foreach (var existingItem in _existingItems)
             {
                 if (!_newItems.Contains(existingItem))
@@ -201,21 +192,21 @@ namespace LinqJoinBenchmark
                 }
             }
 
+            foreach (var newItem in _newItems)
+            {
+                if (!_existingItems.Contains(newItem))
+                {
+                    _existingItems.Add(newItem);
+                }
+
+            }
+
             _existingItems.Consume(new Consumer());
         }
 
         [Benchmark]
         public void ManualForWithoutLinq()
         {
-            for (var i = 0; i < _newItems.Count; i++)
-            {
-                var newItem = _newItems[i];
-                if (!_existingItems.Contains(newItem))
-                {
-                    _existingItems.Add(newItem);
-                }
-            }
-
             for (var i = 0; i < _existingItems.Count; i++)
             {
                 var existingItem = _existingItems[i];
@@ -231,6 +222,15 @@ namespace LinqJoinBenchmark
                     {
                         existingItem.G = found.G;
                     }
+                }
+            }
+
+            for (var i = 0; i < _newItems.Count; i++)
+            {
+                var newItem = _newItems[i];
+                if (!_existingItems.Contains(newItem))
+                {
+                    _existingItems.Add(newItem);
                 }
             }
 
